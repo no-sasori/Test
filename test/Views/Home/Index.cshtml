@@ -1,0 +1,132 @@
+﻿
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<input type="checkbox" id="TextCheck" />
+<label for="TextCheck">Проверить в тексте</label>
+<input type="checkbox" id="FileCheck" />
+<label for="FileCheck">Проверить в файле</label>
+<br></br>
+<br />
+<form id="Texts" style="margin: 0 auto; display: none;">
+
+    <label for="Symbol">Символ</label>
+    <input id="Symbol" name="Symbol" type="text" />
+    <label for="Count">Количество</label>
+    <input id="Count" name="Count" type="number" />
+    <label for="Query">Строка</label>
+    <input id="Query" name="Query" type="text" />
+    
+    <button id="Check">Проверить</button>
+    <div>
+        <label id="Answer"></label>
+       
+    </div>
+  
+</form>
+<br /><br />
+<form id="Files"   style="margin: 0 auto; display:none ">
+
+   
+    <label for="Symbol">Символ</label>
+    <input id="Symbol" name="Symbol" type="text" />
+    <label for="Count">Количество</label>
+    <input id="Count" name="Count" type="number" />
+    <label for="file">Файл</label>
+    <input id="file" name="file" type="file" />
+    <input type="button" id="Check2" value="Проверить" />
+    <label id="Answer" name="Answer"></label>
+  
+</form>
+
+<iframe style="display:none;" name="frame"></iframe>
+
+<script>
+
+    document.getElementById("FileCheck").addEventListener('change', function () {
+        if(this.checked){
+            document.getElementById("Files").style = "margin: 0 auto; display:inline-block;";
+        }
+        else{
+            document.getElementById("Files").style = "margin: 0 auto; display:none;";
+            document.getElementById("Files").reset();
+        }
+        
+    })
+    document.getElementById("TextCheck").addEventListener('change', function () {
+        if(this.checked){
+            document.getElementById("Texts").style = "margin: 0 auto; display:inline-block;";
+        }
+        else{
+            document.getElementById("Texts").style = "margin: 0 auto; display:none;";
+            document.getElementById("Texts").reset()
+        }
+       
+    })
+
+    document.getElementById("Check2").addEventListener('click',function() {
+
+        doRequest();
+
+    })
+
+
+
+    document.getElementById("Check").addEventListener('click',function() {
+        event.preventDefault();
+        let count = document.querySelector('input[name="Count"]').value;
+        let symbol = document.querySelector('input[name="Symbol"]').value; 
+        let query = document.querySelector('input[name="Query"]').value;
+        let Answer = document.getElementById("Answer");
+        console.log(count);
+        console.log(symbol);
+        console.log(query);
+        let res = DoGetRequest(count,symbol,query);
+        console.log(res);
+        Answer.innerHTML=res;
+    });
+
+   function doRequest(){
+        let inputs= document.querySelectorAll('input[type=file]')
+        let count = document.querySelector('input[name="Count"]').value;
+        let symbol = document.querySelector('input[name="Symbol"]').value; 
+        
+        inputs.forEach(input=>{
+
+            let file = input.files[0];
+             var formData = new FormData();
+        formData.append("file", file);
+        formData.append("Count", count);
+        formData.append("Symbol", symbol);
+
+        console.log(formData);
+        console.log(file);
+        console.log(count);
+        console.log(symbol);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://localhost:44324/Home/CheckFile', false);
+        xhr.send(formData);
+        let Answer = document.querySelector('label[name = "Answer"]');
+     
+         Answer.innerHTML= xhr.responseText;
+});
+       
+   }
+
+    function DoGetRequest(count, symbol,query) {
+        var xmlHttp = new XMLHttpRequest();
+        console.log(count);
+        var theUrl = "https://localhost:44324/Home/CheckQuery?Query=" + query + "&Symbol=" + symbol+"&Count="+count
+        console.log(theUrl);
+        xmlHttp.open("GET", theUrl, false); // false for synchronous request
+        xmlHttp.setRequestHeader("Access-Control-Allow-Origin", "*");
+        xmlHttp.setRequestHeader("Access-Control-Allow-Credentials", "true");
+        xmlHttp.setRequestHeader("Access-Control-Max-Age", "1800");
+        xmlHttp.setRequestHeader("Access-Control-Allow-Headers", "content-type");
+        xmlHttp.setRequestHeader("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, PATCH, OPTIONS");
+        xmlHttp.send(null);
+        return xmlHttp.responseText;
+    }
+</script>
